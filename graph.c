@@ -43,7 +43,10 @@ int main()
 
 			case 2:
 			{
+				printf("Enter whic node you want to delete : ");
+				scanf("%d",&iData);
 
+				Delete(&pVerStart,iData);
 			}break;
 
 			case 3:
@@ -415,3 +418,107 @@ EDGE* findAdjecentnode ( VERTEXT* pVerStart, int iData )
 	writeinlogfile ( LEAVE_FUNCTION_STR, __FUNCTION__ );
 	return NULL;
 }
+
+/* below function will delete the all adjacent nodes and create and aary of suspect node which will later decided to delete or not */
+int Delete( VERTEXT** pVerHead, int iData )
+{
+	VERTEXT* pVerTemp = NULL;
+	VERTEXT* pVerTemp2 = NULL;
+	int iCount = 0;
+	EDGE* pEdTemp = NULL,*pEdTempPrev = NULL;
+
+	writeinlogfile( ENTRING_FUNCTION_STR, __FUNCTION__ );
+
+	pVerTemp = *pVerHead;
+	pVerTemp = *pVerHead;
+	while ( pVerTemp )
+	{
+		pEdTemp = pVerTemp-> pEdAdjacentEdge;
+		if (pEdTemp != NULL)
+		{
+			if (pEdTemp->pVerAdjcent->iData == iData)
+			{
+				pEdTemp = pVerTemp->pEdAdjacentEdge;
+				pVerTemp->pEdAdjacentEdge = pVerTemp->pEdAdjacentEdge->pEdNext;
+
+				pEdTemp->pVerAdjcent = NULL;
+				pEdTemp->pEdNext = NULL;
+
+				free(pEdTemp);
+			}
+			else
+			{
+				pEdTempPrev = pVerTemp-> pEdAdjacentEdge;
+				pEdTemp = pVerTemp-> pEdAdjacentEdge-> pEdNext;
+
+				while (pEdTemp)
+				{
+					if(pEdTemp-> pVerAdjcent-> iData == iData)
+					{
+						pVerTemp->iInDegree--;
+						pEdTemp->pVerAdjcent->iOutDegree--;
+
+						pEdTempPrev->pEdNext = pEdTemp-> pEdNext;
+
+						pEdTemp->pVerAdjcent = NULL;
+						pEdTemp->pEdNext = NULL;
+
+						free(pEdTemp);
+						break;
+					}
+					pEdTemp = pEdTemp-> pEdNext;
+				}
+			}		
+		}
+		
+		if ( pVerTemp->iData == iData )
+		{
+			pEdTemp = pVerTemp-> pEdAdjacentEdge;
+			while ( pEdTemp )
+			{
+				pVerTemp->iInDegree--;
+				pEdTemp->pVerAdjcent->iOutDegree--;
+				pVerTemp->pEdAdjacentEdge = pEdTemp->pEdNext;
+
+				pEdTemp->pVerAdjcent = NULL;
+				pEdTemp->pEdNext = NULL;
+
+				free(pEdTemp);
+
+				pEdTemp = pVerTemp-> pEdAdjacentEdge;
+			}
+		}
+		pVerTemp = pVerTemp-> pVerNext;
+	}
+
+	pVerTemp = *pVerHead;
+	//pVerTemp2 = pVerTemp;
+	while (pVerTemp)
+	{
+		if (pVerTemp->iData == iData)
+		{
+			if ( (*pVerHead)->iData == iData)
+			{
+				pVerTemp2 = *pVerHead;
+
+				(*pVerHead) = (*pVerHead)-> pVerNext;
+
+				free(pVerTemp2);
+				break;
+			}
+			else
+			{
+				pVerTemp2->pVerNext = pVerTemp-> pVerNext;
+
+				pVerTemp->pEdAdjacentEdge = NULL;
+				pVerTemp->pVerNext = NULL;
+
+				free(pVerTemp);
+				break;
+			}
+		}
+		pVerTemp2 = pVerTemp;
+		pVerTemp = pVerTemp->pVerNext;
+	}
+}
+
